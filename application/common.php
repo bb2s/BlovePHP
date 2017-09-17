@@ -12,7 +12,34 @@
 // 应用公共文件
 use think\Db;
 
+if (!function_exists('parse_attr')) {
+    /**
+     * 解析配置
+     * @param string $value 配置值
+     * @return array|string
+     */
+    function parse_attr($value = '') {
+        $array = preg_split('/[,;\r\n]+/', trim($value, ",;\r\n"));
+        if (strpos($value, ':')) {
+            $value  = array();
+            foreach ($array as $val) {
+                list($k, $v) = explode(':', $val);
+                $value[$k]   = $v;
+            }
+        } else {
+            $value = $array;
+        }
+        return $value;
+    }
+}
 
+if (!function_exists('is_login')){
+    //判断是否登录
+    function is_login()
+    {
+        return model('common/user')->isLogin();
+    }
+}
 if (!function_exists('hook')) {
     /**
      * 监听钩子
@@ -27,7 +54,25 @@ if (!function_exists('hook')) {
         \think\Hook::listen($name, $params, $extra, $once);
     }
 }
-
+if (!function_exists('admin_url')) {
+    /**
+     * 生成后台入口url
+     * @param string        $url 路由地址
+     * @param string|array  $vars 变量
+     * @param bool|string   $suffix 生成的URL后缀
+     * @param bool|string   $domain 域名
+     * @author 小乌 <82950492@qq.com>
+     * @return string
+     */
+    function admin_url($url = '', $vars = '', $suffix = true, $domain = false) {
+        $url = url($url, $vars, $suffix, $domain);
+        if (defined('ENTRANCE') && ENTRANCE == 'admin') {
+            return $url;
+        } else {
+            return preg_replace('/\/index.php/', '/'.ADMIN_FILE, $url);
+        }
+    }
+}
 if (!function_exists('get_avatar')) {
     /**
      * 获取用户头像路径
